@@ -12,15 +12,15 @@ terraform {
 }
 
 provider "couchbase" {
-  address            = "localhost"
-  port               = 8091
+  connection_string  = "couchbase://localhost"
   username           = "Administrator"
-  password           = "password"
+#  password           = "password"
   management_timeout = 10
+#  tls_skip_verify    = true
 }
 
-resource "couchbase_bucket" "example" {
-  name                     = "example"
+resource "couchbase_bucket" "tf_example" {
+  name                     = "tf_example"
   ram_quota_mb             = 256
   flush_enabled            = false
   max_expire               = 0

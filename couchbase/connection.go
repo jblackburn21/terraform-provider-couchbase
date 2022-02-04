@@ -9,8 +9,7 @@ import (
 
 // CouchbaseConnection struct container information about connection parameters.
 type CouchbaseConnection struct {
-	Address        string
-	Port           int
+	ConnStr        string
 	ClusterOptions gocb.ClusterOptions
 }
 
@@ -45,11 +44,11 @@ func (cc *CouchbaseConnection) CouchbaseInitialization() (*CouchbaseConfiguratio
 func (cc *CouchbaseConnection) ConnectionValidate() (*gocb.Cluster, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	cluster, err := gocb.Connect(fmt.Sprintf("%s:%d", cc.Address, cc.Port), cc.ClusterOptions)
+	cluster, err := gocb.Connect(cc.ConnStr, cc.ClusterOptions)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  fmt.Sprintf("cannot connect to couchbase %s:%d\n", cc.Address, cc.Port),
+			Summary:  fmt.Sprintf("cannot connect to couchbase %s\n", cc.ConnStr),
 			Detail:   fmt.Sprintf("error details: %s\n", err),
 		})
 		return nil, diags

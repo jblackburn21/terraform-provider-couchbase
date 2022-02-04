@@ -13,4 +13,10 @@ docker compose logs -f
 
 ## Examples
 
+Clean when testing a new version of the provider
+
+```bash
+make clean
+```
+
 * [Bucket](./bucket/README.md)

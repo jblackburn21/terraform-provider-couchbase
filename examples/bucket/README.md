@@ -6,6 +6,9 @@ Create, update, destroy, and import bucket.
 
 ```bash
 terraform init
+
+export CB_PASSWORD=password 
+
 terraform plan
 terraform apply
 ```
