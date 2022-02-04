@@ -13,15 +13,10 @@ func Provider() *schema.Provider {
 	return &schema.Provider{
 		TerraformVersion: terraformVersion,
 		Schema: map[string]*schema.Schema{
-			providerAddress: {
+			providerConnStr: {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("CB_ADDRESS", ""),
-			},
-			providerPort: {
-				Type:        schema.TypeInt,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("CB_PORT", ""),
+				DefaultFunc: schema.EnvDefaultFunc("CB_CONNECTION_STRING", ""),
 			},
 			providerUsername: {
 				Type:        schema.TypeString,
@@ -41,6 +36,13 @@ func Provider() *schema.Provider {
 				Default:     15,
 				DefaultFunc: schema.EnvDefaultFunc("CB_MANAGEMENT_TIMEOUT", ""),
 			},
+			providerTlsSkipVerify: {
+				Type:        schema.TypeBool,
+				Required:    false,
+				Optional:    true,
+				Default:     false,
+				DefaultFunc: schema.EnvDefaultFunc("CB_TLS_SKIP_VERIFY", ""),
+			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -57,8 +59,7 @@ func Provider() *schema.Provider {
 
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	cc := &CouchbaseConnection{
-		Address: d.Get(providerAddress).(string),
-		Port:    d.Get(providerPort).(int),
+		ConnStr: d.Get(providerConnStr).(string),
 		ClusterOptions: gocb.ClusterOptions{
 			Username: d.Get(providerUsername).(string),
 			Password: d.Get(providerPassword).(string),
@@ -67,7 +68,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 			},
 			// TODO
 			SecurityConfig: gocb.SecurityConfig{
-				TLSSkipVerify: true,
+				TLSSkipVerify: d.Get(providerTlsSkipVerify).(bool),
 				AllowedSaslMechanisms: []gocb.SaslMechanism{
 					gocb.PlainSaslMechanism,
 				},

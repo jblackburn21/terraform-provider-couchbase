@@ -1,30 +1,40 @@
 package couchbase
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/couchbase/gocb/v2"
 )
 
-// getBucketConflictResolutionType custom fuction for get bucket conflict resolution type because couchbase golang sdk doesn't support to get conflict
+// getBucketConflictResolutionType custom function for get bucket conflict resolution type because couchbase golang sdk doesn't support to get conflict
 // resolution type in gocb v2 version
 func (cc *CouchbaseConnection) getBucketConflictResolutionType(bucketName string) (*gocb.ConflictResolutionType, error) {
 	var conflictResolutionType conflictResolutionType
-	var schema string
-	client := http.Client{Timeout: cc.ClusterOptions.TimeoutsConfig.ManagementTimeout}
+	var host string
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: cc.ClusterOptions.SecurityConfig.TLSSkipVerify},
+	}
+
+	client := http.Client{
+		Timeout:   cc.ClusterOptions.TimeoutsConfig.ManagementTimeout,
+		Transport: tr,
+	}
 
 	// TODO
-	if cc.ClusterOptions.SecurityConfig.TLSRootCAs == nil {
-		schema = "http"
+	s := strings.Split(cc.ConnStr, "://")
+	if s[0] == "couchbases" {
+		host = fmt.Sprintf("https://%s:18091", s[1])
 	} else {
-		schema = "https"
+		host = fmt.Sprintf("http://%s:8091", s[1])
 	}
 
 	// TODO https
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s://%s:%d/pools/default/buckets/%s", schema, cc.Address, cc.Port, bucketName), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/pools/default/buckets/%s", host, bucketName), nil)
 	if err != nil {
 		return nil, err
 	}
